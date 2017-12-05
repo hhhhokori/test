@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 
-public class CustomBasicAuthenticationEntryPoint  extends BasicAuthenticationEntryPoint{
+@Component("customBasicAuthenticationEntryPoint")
+public class CustomBasicAuthenticationEntryPoint extends BasicAuthenticationEntryPoint{
 
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,

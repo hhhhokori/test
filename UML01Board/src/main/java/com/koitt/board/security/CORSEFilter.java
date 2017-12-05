@@ -34,7 +34,8 @@ public class CORSEFilter implements Filter {
 		resp.setHeader("Access-Control-Allow-Credentials", "true");
 		resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 		resp.setHeader("Access-Control-Max-Age", "3600");
-		resp.setHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization, " +
+		resp.setHeader("Access-Control-Allow-Headers", 
+					"X-Requested-With, Content-Type, Authorization, " +
 					"Origin, Accept, Access-Control-Request-Method, "+
 					"Access-Control-Request-Headers");
 		chain.doFilter(request, resp);
