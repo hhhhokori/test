@@ -15,14 +15,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 @Component("corsFilter")
-public class CORSEFilter implements Filter {
+public class CORSFilter implements Filter {
 
 	private Logger logger = LogManager.getLogger(this.getClass());
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		
-		
+			
 	}
 
 	@Override
