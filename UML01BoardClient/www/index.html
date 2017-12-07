@@ -2,8 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
-<meta name="viewport" 
+<title>게시판 로그인 페이지</title>
+<meta name="viewport"
 	content="user-scalable=no, initial-scale=1, maximum-scale=1,
 	minimum-scale=1, width=device-width">
 <link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
@@ -13,7 +13,7 @@
 
 	$(document).on('pagecreate', function() {
 		$('#btnLogin').click(function(e) {
-			// 기본이벤트 동작하지 않도록 하기
+			// 기본 이벤트 동작하지 않도록 하기
 			e.preventDefault();
 
 			// form 가져오기
@@ -29,9 +29,9 @@
 				type: 'post',
 				url: REST_SERVICE_URI + '/user/login',
 				data: formData,
-				processData= false,
+				processData: false,
 				contentType: false,
-				cache: false
+				cache: false,
 				success: function(data, textStatus, xhr) {
 					$('#btnLogin').prop('disabled', false);
 					alert(data);
@@ -44,14 +44,14 @@
 		});
 	});
 </script>
-<script type="text/javascript" src="js/jquery.monile-1.4.5.min.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.4.5.js"></script>
 </head>
 <body>
 	<div data-role="page">
 		<div data-role="header">
 			<h1>게시판 로그인</h1>
 		</div>
-		<div date-role="content">
+		<div data-role="content">
 			<form method="post" id="frmLogin">
 				<div data-role="fieldcontain">
 					<label for="email">이메일</label>
@@ -61,9 +61,10 @@
 					<label for="password">비밀번호</label>
 					<input type="password" name="password" id="password">
 				</div>
+				
 				<div class="ui-grid-a">
 					<div class="ui-block-a">
-						<a href="#" data-role="button" id="btnJoin">회원 가입</a>
+						<a href="join.html" data-role="button" id="btnJoin">회원 가입</a>
 					</div>
 					<div class="ui-block-b">
 						<a href="#" data-role="button" id="btnLogin">로그인</a>
