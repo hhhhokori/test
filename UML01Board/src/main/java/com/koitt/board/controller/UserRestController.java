@@ -40,7 +40,7 @@ public class UserRestController {
 	
 	// 사용자 로그인
 	@RequestMapping(value = "/user/login", method = RequestMethod.POST)
-	public ResponseEntity<String> login(UserInfo userInfo) {
+	public ResponseEntity<String> login(UserInfo userInfo, UriComponentsBuilder ucBuilder) {
 		
 		
 		boolean isMatched = userInfoService.isPasswordMatched(
@@ -53,8 +53,14 @@ public class UserRestController {
 			
 			// 평문을 Base64로 인코딩
 			String base64Credentials = new String(Base64.encodeBase64(plainCredentials.getBytes()));
+			
+			logger.debug(base64Credentials);
 		
-			return new ResponseEntity<String>(base64Credentials, HttpStatus.OK);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(ucBuilder.path("/user/{email}").buildAndExpand(userInfo.getEmail()).toUri());
+			
+			return new ResponseEntity<String>(base64Credentials, headers, HttpStatus.OK);
+			
 		}
 		logger.debug("login failed");
 		
