@@ -33,11 +33,17 @@
 				contentType: false,
 				cache: false,
 				success: function(data, textStatus, xhr) {
+					if (typeof(Storage) !== 'undefined') {
+						alert('ok');
+						} else {
+							alert('not support');
+							}
+					
 					$('#btnLogin').prop('disabled', false);
 
 					var nextUrl = xhr.getResponseHeader('Location');
 					
-					sessionStorage.setItem = ('base64Credentials', data);
+					sessionStorage.setItem('base64Credentials', data);
 
 					alert(nextUrl + " / " + sessionStorage.getItem('base64Credentials'));
 				},
