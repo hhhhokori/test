@@ -5,20 +5,20 @@ import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,7 +26,7 @@ import com.koitt.board.model.CommonException;
 import com.koitt.board.model.UserInfo;
 import com.koitt.board.service.UserInfoService;
 
-@Controller
+@RestController
 @RequestMapping("/rest")
 public class UserRestController {
 	
@@ -42,30 +42,40 @@ public class UserRestController {
 	
 	// 사용자 로그인
 	@RequestMapping(value = "/user/login", method = RequestMethod.POST)
-	public ResponseEntity<String> login(UserInfo userInfo, UriComponentsBuilder ucBuilder) {
+	public ResponseEntity<String> login(UserInfo userInfo, 
+			UriComponentsBuilder ucBuilder) {
 		
+		logger.debug(userInfo);
 		
+		// 아이디 존재 유무와 비밀번호 일치 여부 확인
 		boolean isMatched = userInfoService.isPasswordMatched(
-				userInfo.getEmail(), 
+				userInfo.getEmail(),
 				userInfo.getPassword());
 		
 		if (isMatched) {
 			// Base64 인코딩 전 평문
-			String plainCredentials = userInfo.getEmail() + ":" + userInfo.getPassword();
+			String plainCredentials = 
+					userInfo.getEmail() + ":" + userInfo.getPassword();
 			
 			// 평문을 Base64로 인코딩
-			String base64Credentials = new String(Base64.encodeBase64(plainCredentials.getBytes()));
+			String base64Credentials = 
+					new String(
+							Base64.encodeBase64(plainCredentials.getBytes()
+					));
 			
 			logger.debug(base64Credentials);
-		
+			
+			userInfo = userInfoService.detail(userInfo.getEmail());
+			
 			HttpHeaders headers = new HttpHeaders();
-			headers.setLocation(ucBuilder.path("/rest/user/{email}").buildAndExpand(userInfo.getEmail()).toUri());
+			headers.setLocation(ucBuilder.path("/rest/user/{id}")
+					.buildAndExpand(userInfo.getId())
+					.toUri());
 			
 			return new ResponseEntity<String>(base64Credentials, headers, HttpStatus.OK);
-			
 		}
-		logger.debug("login failed");
 		
+		logger.debug("login failed");
 		return new ResponseEntity<String>("", HttpStatus.NOT_FOUND);
 	}
 	
@@ -112,25 +122,38 @@ public class UserRestController {
 		userInfoService.newUser(user);
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(ucBuilder.path("/rest/user/{email}").buildAndExpand(user.getEmail()).toUri());
+		headers.setLocation(ucBuilder.path("/rest/user/{id}")
+				.buildAndExpand(user.getId())
+				.toUri());
 		
 		return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
 	}
 	
 	// 사용자 불러오기
-	@RequestMapping(value = "/user/{email}", method = RequestMethod.GET,
-			produces = { MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<UserInfo> homePage(@PathVariable("email") String email) {
-		
+	@RequestMapping(value = "/user/{id}", method = RequestMethod.GET,
+			produces = { MediaType.APPLICATION_JSON_UTF8_VALUE, 
+						MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<UserInfo> homePage(@PathVariable("id") Integer id, 
+			UriComponentsBuilder ucBuilder) {
+
 		// 로그인 된 상태이면
 		UserInfo item = null;
-		if (email != null && !email.trim().isEmpty()) {
-			item = userInfoService.detail(email);
+		if (id != null) {
+			item = userInfoService.detail(id);
 			
-			if (item != null)
-				return new ResponseEntity<UserInfo>(item, HttpStatus.OK);
+			if (item != null) {
+				HttpHeaders headers = new HttpHeaders();
+				headers.setLocation(ucBuilder.path(UPLOAD_FOLDER + "/{avatar}")
+						.buildAndExpand(item.getAvatar())
+						.toUri());
+				return new ResponseEntity<UserInfo>(item, headers, HttpStatus.OK);
+			}
 		}
 
 		return new ResponseEntity<UserInfo>(new UserInfo(), HttpStatus.NO_CONTENT);
 	}
+	
+	// 사용자 수정
+	
+	// 사용자 삭제 (탈퇴)
 }
