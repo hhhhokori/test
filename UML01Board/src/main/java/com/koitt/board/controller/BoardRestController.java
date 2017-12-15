@@ -12,6 +12,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -208,7 +210,13 @@ public class BoardRestController {
 		return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
 	}
 
-	// 글 수정
+	/*
+	 *  글 수정
+	 *  https://blog.outsider.ne.kr/1001 참고
+	 *  1. Multipart/form-data 전송 시에는 POST로 전송해야 한다.
+	 *  2. 만약 PUT을 이용해서 전송하고 싶다면, input type file에 대해서는
+	 *     따로 POST로 전송하고, 나머지 일반 정보는 PUT으로 따로 전송한다.
+	 */
 	@RequestMapping(value = "/board/{no}", method = RequestMethod.POST)
 	public ResponseEntity<Void> modify(HttpServletRequest request,
 			@PathVariable("no") int no,
@@ -218,8 +226,6 @@ public class BoardRestController {
 			String password,
 			UriComponentsBuilder ucBuilder)
 					throws CommonException, Exception {
-
-		logger.debug("aaaaaa: " + title + " : " + content + " : " + password);
 
 		// 비밀번호 비교해서 같지 않다면 오류메시지 출력
 		boolean isMatched = userInfoService.isBoardMatched(no, password);
@@ -256,12 +262,20 @@ public class BoardRestController {
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
 
-	// 글 삭제
+	/*
+	 *  글 삭제
+	 *  @RequestHeader("Authorization")을 사용하면
+	 *  "Basic encodeBase64(email:password)" 정보를 가져올 수 있다.
+	 */
 	@RequestMapping(value = "/board/{no}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> remove(HttpServletRequest request,
 			@PathVariable("no") String no,
-			String password)
+			@RequestHeader("Authorization") String authorization)
 					throws CommonException, UnsupportedEncodingException {
+		
+		String base64Credentials = authorization.split(" ")[1];
+		String plainCredentials = new String(Base64.decodeBase64(base64Credentials));
+		String password = plainCredentials.split(":")[1];
 
 		boolean isMatched = userInfoService.isBoardMatched(Integer.parseInt(no), password);
 		if (!isMatched) {
